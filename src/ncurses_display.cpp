@@ -7,6 +7,7 @@
 #include "format.h"
 #include "ncurses_display.h"
 #include "system.h"
+#include <iostream>
 
 using std::string;
 using std::to_string;
@@ -19,12 +20,13 @@ std::string NCursesDisplay::ProgressBar(float percent) {
   float bars{percent * size};
 
   for (int i{0}; i < size; ++i) {
-    result += i <= bars ? '|' : ' ';
+    result += i < bars ? "|" : " ";
   }
 
   string display{to_string(percent * 100).substr(0, 4)};
-  if (percent < 0.1 || percent == 1.0)
+  if (percent < 0.1 || percent == 1.0) {
     display = " " + to_string(percent * 100).substr(0, 3);
+  }
   return result + " " + display + "/100%";
 }
 
@@ -34,13 +36,11 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
   mvwprintw(window, ++row, 2, "CPU: ");
   wattron(window, COLOR_PAIR(1));
-  mvwprintw(window, row, 10, "");
-  wprintw(window, ProgressBar(system.Cpu().Utilization()).c_str());
+  mvwprintw(window, row, 10, ProgressBar(system.Cpu().Utilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
-  mvwprintw(window, row, 10, "");
-  wprintw(window, ProgressBar(system.MemoryUtilization()).c_str());
+  mvwprintw(window, row, 10, ProgressBar(system.MemoryUtilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
   mvwprintw(window, ++row, 2,
             ("Total Processes: " + to_string(system.TotalProcesses())).c_str());
